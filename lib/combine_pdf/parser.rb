@@ -33,7 +33,7 @@ module CombinePDF
     # they are mainly to used to know if the file is (was) encrypted and to get more details.
     attr_reader :info_object, :root_object, :names_object, :forms_object, :outlines_object, :metadata
 
-    attr_reader :allow_optional_content
+    attr_reader :allow_optional_content, :ignore_parse_failures
     # when creating a parser, it is important to set the data (String) we wish to parse.
     #
     # <b>the data is required and it is not possible to set the data at a later stage</b>
@@ -58,6 +58,7 @@ module CombinePDF
       @version = nil
       @scanner = nil
       @allow_optional_content = options[:allow_optional_content]
+      @ignore_parse_failures = options[:ignore_parse_failures]
     end
 
     # parse the data in the new parser (the data already set through the initialize / new method)
@@ -79,7 +80,7 @@ module CombinePDF
       @parsed = _parse_
       # puts @parsed
 
-      unless (@parsed.select { |i| !i.is_a?(Hash) }).empty?
+      unless @ignore_parse_failures || @parsed.all? { |i| i.is_a?(Hash) }
         # p @parsed.select
         raise ParsingError, 'Unknown PDF parsing error - malformed PDF file?'
       end
